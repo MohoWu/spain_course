@@ -1,0 +1,162 @@
+---
+title: Accessing Spanish AQ and met data with `saqgetr` and `worldmet`
+date: "`r Sys.Date()`"
+Author: Hao Wu
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: "show"
+    code_download: true
+    theme: "flatly"
+    highlight: "tango"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE)
+```
+
+# Preparation
+
+To start with, some R packages need to be installed for the following analysis. 
+
+```{r install_package}
+
+packages <- c("tidyverse", "saqgetr", "worldmet", "openair")
+
+# install them from CRAN if you haven't them before
+# install.packages(packages)
+
+# load packages
+library(tidyverse)
+library(saqgetr)
+library(worldmet)
+library(openair)
+
+```
+
+# Getting Spanish AQ data
+
+We will use the `saqgetr` to access AQ data. This package not only lets you access AQ data in Spain but also most European countries.
+
+```{r check_countries}
+
+get_saq_sites() %>%
+  count(country)
+
+```
+
+The `%>%` (pipe) symbol will be used extensively in the following analysis. It's a way of saying get the results from `get_saq_sites()` and send it to the `count()` function. The piped result will be used as the first argument of the next function by default. It is equivalent to:
+
+``` r
+count(x = get_saq_sites(), country)
+```
+
+But using the pipe symbol is a more intuitive way to express doing a chain of actions rather than having the initial input nested in a bunch of functions. 
+
+
+We can extract all sites in Spain. 
+
+```{r}
+
+# get Spanish sites 
+spain_sites <- get_saq_sites() %>%
+  filter(country == "spain")
+
+DT::datatable(spain_sites, 
+              options = list(scrollX = TRUE))
+
+```
+
+Select 2 sites in Huelva.
+
+```{r}
+
+# select two sites in Huelva
+es_aq <- get_saq_observations(
+  site = c("es1328a", "es1340a"),
+  start = 2019,
+  end = 2019
+)
+
+# reshpae data into wide format
+es_aq_clean <- saq_clean_observations(es_aq, 
+                                      summary = "hour", 
+                                      valid_only = TRUE, 
+                                      spread = TRUE)
+
+head(es_aq_clean)
+
+```
+
+Most data downloaded is at hourly interval. We can average the data to longer intervals with `timeAverage()` function.
+
+
+```{r}
+
+# calculate daily average
+es_aq_month <- timeAverage(es_aq_clean,
+                           avg.time = "day", type = "site")
+
+head(es_aq_month)
+
+```
+
+
+The AQ data frame does not contain infomation on the stations. We can join them from the `spain_sites` data frame.
+
+```{r}
+
+# join site coordinates with aq data
+es_aq_clean <- es_aq_clean %>%
+  left_join(spain_sites[c("site", "site_name", "latitude", "longitude")], 
+            by = "site")
+
+head(es_aq_clean)
+
+```
+
+# Get met data
+
+`worldmet` package is used to get meteorology data. `getMeta` function gets a table of met stations that are closest to the AQ monitoring sites based on the latitude and longitude supplied. 
+
+```{r}
+
+# search the closest met station
+met_sites <- getMeta(lat = es_aq_clean$latitude[1],
+                     lon = es_aq_clean$longitude[1])
+
+met_sites
+
+```
+
+From the table above we obtain the met station code for Huelva, which is "<USAF>-<WBAN>". This code is used to download met data.
+
+```{r}
+
+# import met data
+met <- importNOAA(code = "083830-99999", year = 2019)
+
+head(met)
+```
+
+Now we can join the met data with AQ data.
+
+```{r}
+
+# joint met data with aq data
+es_aq_clean <- es_aq_clean %>%
+  left_join(met[c("date", "wd", "ws")], by = "date")
+
+head(es_aq_clean)
+
+
+```
+
+
+
+
+
