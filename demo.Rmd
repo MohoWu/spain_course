@@ -1,7 +1,7 @@
 ---
 title: Accessing Spanish AQ and met data with `saqgetr` and `worldmet`
 date: "`r Sys.Date()`"
-Author: Hao Wu
+Author: "Hao Wu"
 output: 
   html_document:
     toc: true
@@ -10,6 +10,8 @@ output:
     code_download: true
     theme: "flatly"
     highlight: "tango"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -38,6 +40,11 @@ library(openair)
 
 ```
 
+* `tidyverse` has many useful functions for data manipulation. 
+* `saqgetr` imports AQ data.
+* `worldmet` imports meteorology data.
+* `openair` has many useful functions for analysing AQ data.
+
 # Getting Spanish AQ data
 
 We will use the `saqgetr` to access AQ data. This package not only lets you access AQ data in Spain but also most European countries.
@@ -57,8 +64,7 @@ count(x = get_saq_sites(), country)
 
 But using the pipe symbol is a more intuitive way to express doing a chain of actions rather than having the initial input nested in a bunch of functions. 
 
-
-We can extract all sites in Spain. 
+Now let's see what data are available in Spain. We can extract all sites in Spain. 
 
 ```{r}
 
@@ -71,29 +77,94 @@ DT::datatable(spain_sites,
 
 ```
 
-Select 2 sites in Huelva.
+A better way to visualise the data available is to plot them on a map. Thanks to the `ricardor` package, this can be done fairly easily.
+
+```r
+devtools::install_github("mohowu/ricardor")
+```
+
+
+```{r}
+
+library(ricardor)
+
+spain_sites %>%
+  mutate(date_end = as.character(date_end)) %>% # convert date to character to allow it show up properly on the map
+  sp_from_data_frame(type = "point", 
+                     latitude = "latitude", longitude = "longitude") %>%
+  plot_leaflet(popup = c("site", "site_name", "site_type", "date_end"),
+               radius = 8, colour = "red", clusterOptions = leaflet::markerClusterOptions())
+  
+
+```
+
+How do we know what measurements each site provides? Each site, variable and measuring period combination is called a process. We can get all the processes using `get_saq_processes()`. 
+
+```{r}
+
+processes <- get_saq_processes()
+
+```
+
+For demonstration I have selected two sites in Huelva that are still in operation in 2019, one industrial site and one traffic site. Let's see what data are availabe at these sites.
+
+```{r}
+
+processes %>%
+  filter(site %in% c("es1328a", "es1340a")) %>%
+  DT::datatable(options = list(scrollX = TRUE))
+
+```
+
+
+Now we can download 2019 data for these two sites.
 
 ```{r}
 
 # select two sites in Huelva
 es_aq <- get_saq_observations(
   site = c("es1328a", "es1340a"),
+  valid_only = TRUE,
   start = 2019,
-  end = 2019
+  end = 2019,
+  verbose = TRUE
 )
 
-# reshpae data into wide format
+glimpse(es_aq)
+
+```
+
+The raw data downloaded by `saqgetr` is in long format, i.e. all the pollutant names (`variable`) are all in one column and their values are all in another column called `value`. However sometimes you may want the data in "wide" format, i.e. every pollutant has its own column filled by its values. You can do this using `saq_clean_obersations`.
+
+
+```{r}
+# reshpae data into wide format, remember put spread = TRUE
 es_aq_clean <- saq_clean_observations(es_aq, 
                                       summary = "hour", 
                                       valid_only = TRUE, 
                                       spread = TRUE)
 
-head(es_aq_clean)
+glimpse(es_aq_clean)
+```
+
+A more generic way to reshape data is using `spread` and `gather` functions in the `tidyverse` package. `spread` converts long data to wide format and vice versa for `gather`.
+
+```{r}
+# long to wide
+# First we need to keep only the columns of common ids such as date, site.
+# columns that are unique to each variable should be removed, such as process
+
+es_aq %>%
+  select(date, site, variable, value) %>%
+  spread(key = variable, value = value) %>%
+  glimpse()
+
+
 
 ```
 
-Most data downloaded is at hourly interval. We can average the data to longer intervals with `timeAverage()` function.
 
+Most data downloaded is at hourly interval. We can average the data to longer periods with `timeAverage()` function from `openair` package.
 
 ```{r}
 
@@ -115,7 +186,29 @@ es_aq_clean <- es_aq_clean %>%
   left_join(spain_sites[c("site", "site_name", "latitude", "longitude")], 
             by = "site")
 
-head(es_aq_clean)
+glimpse(es_aq_clean)
+
+```
+
+Now let's have a quick visual summary of the data.
+
+```{r}
+
+es_aq_clean %>%
+  summaryPlot(period = "months", pollutant = "nox", type = "density")
+
+```
+ 
+The summary plot gives an quick overview of how the pollutant levels compare across different sites. You can find some summary statistics in the timeseries plot. Missing data periods are also marked as red above the timeline. 
+
+It's also possible to summarise all the pollutants at one site.
+
+```{r}
+
+es_aq_clean %>%
+  filter(site == "es1328a") %>%
+  select(-latitude, -longitude) %>%
+  summaryPlot(period = "months", type = "density", main = "Marismas del Titan")
 
 ```
 
@@ -126,10 +219,9 @@ head(es_aq_clean)
 ```{r}
 
 # search the closest met station
-met_sites <- getMeta(lat = es_aq_clean$latitude[1],
-                     lon = es_aq_clean$longitude[1])
+getMeta(lat = es_aq_clean$latitude[1],
+        lon = es_aq_clean$longitude[1])
 
-met_sites
 
 ```
 
@@ -149,14 +241,39 @@ Now we can join the met data with AQ data.
 
 # joint met data with aq data
 es_aq_clean <- es_aq_clean %>%
-  left_join(met[c("date", "wd", "ws")], by = "date")
-
-head(es_aq_clean)
+  left_join(met[c("date", "wd", "ws", "air_temp")], by = "date")
 
 
 ```
 
+Let's plot a wind rose plot to see the wind profile at the stations.It seems like there is a good proportion of wind coming from all directions except Southeast.
 
+```{r}
 
+es_aq_clean %>%
+  filter(site == "es1340a") %>%
+  windRose(paddle = FALSE)
+
+```
+
+We can also replace the wind speed data in the plot above with other variables, such as pollutant concentration. This lets us see the relationship between wind direction and pollutant concentration.
+
+```{r}
+
+es_aq_clean %>%
+  pollutionRose(pullutatnt ="nox", type = "site_name")
+
+```
+
+A even better way to visualise the relationship between pollutant concentration and wind conditions is using `polarPlot()` function. This kind of plot is very powerful because it encapsulate 3 dimensions, i.e. pullutant concentration, wind speed and direction.
+
+```{r}
+
+es_aq_clean %>%
+  polarPlot(pollutant = "nox", type = "site_name")
+
+```
+
+This plot clearly shows the direction of the pollution source with respect to the station. Pozo Dulce is at the North of a roundabout, hence the high pollution plume predominately coming from the South. Marismas Del Titan is classified as an industrial site. However judging by the polar plot it looks more like a background site without any dominant source from any direction. 
 
 
