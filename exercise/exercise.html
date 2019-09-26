@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<meta name="progressive" content="true" />
+<meta name="allow-skip" content="false" />
+
+<title>Tutorial</title>
+
+
+<!-- highlightjs -->
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+</head>
+
+<body>
+
+
+
+<div class="pageContent band">
+<div class="bandContent page">
+
+<div class="topics">
+
+<div id="section-getting-aq-data" class="section level2">
+<h2>Getting AQ data</h2>
+<p>All the packages required for this tutorial have already been loaded.</p>
+<div id="section-finding-available-data" class="section level3">
+<h3>Finding available data</h3>
+<ul>
+<li>Find all the available monitoring sites in Spain and save it to a data frame called <code>spain_sites</code></li>
+<li>Quickly view a summary of <code>spain_sites</code> with <code>glimpse()</code></li>
+</ul>
+<div class="tutorial-exercise" data-label="get-data" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="get-data-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>spain_sites &lt;- get_saq_sites() %&gt;%
+  filter(country == &quot;spain&quot;)</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="get-data-hint-2" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>glimpse(spain_sites)</code></pre>
+</div>
+</div>
+<div id="section-plot-all-the-spanish-sites" class="section level3">
+<h3>Plot all the Spanish sites</h3>
+<p>Now plot the sites on a map and find two sites that are still in operation in 2019.</p>
+<ul>
+<li>First you will need to convert the data frame to a spatial object with <code>sp_from_data_frame()</code></li>
+<li>Then plot it with <code>plot_leaflet()</code></li>
+</ul>
+<div class="tutorial-exercise" data-label="plot-site" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="plot-site-solution" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>spain_sites %&gt;%
+  mutate(date_end = as.character(date_end)) %&gt;% # convert date to character to allow it show up properly on the map
+  sp_from_data_frame(type = &quot;point&quot;, 
+                     latitude = &quot;latitude&quot;, longitude = &quot;longitude&quot;) %&gt;%
+  plot_leaflet(popup = c(&quot;site&quot;, &quot;site_name&quot;, &quot;site_type&quot;, &quot;date_end&quot;),
+               radius = 8, colour = &quot;red&quot;, clusterOptions = leaflet::markerClusterOptions()) # try different options in plot_leaflet to get the desired plot</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="plot-site-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># first we need to convert the date_end column to character if we to display it on the map
+spain_sites %&gt;%
+  mutate(date_end = as.character(date_end)) %&gt;%
+  sp_from_data_frame(...) %&gt;%
+  plot_leaflet(...)</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="plot-site-hint-2" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># To plot the data on a map, first we need to convert the data frame to a spatial object using sp_from_data_frame
+spain_sites %&gt;%
+  mutate(date_end = as.character(date_end)) %&gt;%
+  sp_from_data_frame(type = &quot;piont&quot;) %&gt;%
+  plot_leaflet(...)</code></pre>
+</div>
+</div>
+<div id="section-select-two-sites" class="section level3">
+<h3>Select two sites</h3>
+<p>Zoom into Madrid and find two sites that are still in operation in 2019.</p>
+<p>Filter the <code>spain_sites</code> data frame to get info about two sites in Madrid:</p>
+<ul>
+<li>Plaza del Carmen (es1422a)</li>
+<li>Plaza de Espana (es0115a)</li>
+</ul>
+<div class="tutorial-exercise" data-label="two-sites" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="two-sites-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># %in% operator in R, is used to identify if an element belongs to a vector
+
+spain_sites %&gt;%
+  filter(... %in% c(...))</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="two-sites-hint-2" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>spain_sites %&gt;%
+  filter(site %in% c(&quot;es1422a&quot;, &quot;es0115a&quot;))</code></pre>
+</div>
+</div>
+<div id="section-get-aq-data" class="section level3">
+<h3>Get AQ data</h3>
+<ul>
+<li>Now let’s download July 2019 data for these sites with <code>get_saq_observations()</code> function.</li>
+<li>Save the output to <code>es_aq</code></li>
+</ul>
+<div class="tutorial-exercise" data-label="get-aq" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<blockquote>
+<p>Note that when you assign the output to a data frame, you will NOT see any output in the console.</p>
+</blockquote>
+<div class="tutorial-exercise-support" data-label="get-aq-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># select two sites in Madrid
+es_aq &lt;- get_saq_observations(
+  site = c(&quot;es1422a&quot;, &quot;es0115a&quot;),
+  start = &quot;2019-07-01&quot;,
+  end = &quot;2019-07-31&quot;
+)</code></pre>
+</div>
+</div>
+</div>
+<div id="section-data-exploration" class="section level2">
+<h2>Data exploration</h2>
+<p>Run the code below to get a quick look at the <code>es_aq</code> data frame.</p>
+<div class="tutorial-exercise" data-label="glimpse-es_aq" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>glimpse(es_aq)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p>The AQ data downloaded contain 9 columns.</p>
+<ul>
+<li><code>date</code> the start date/time of the measurement</li>
+<li><code>end_date</code> the end date/teim of the measurement</li>
+<li><code>site</code> the site code</li>
+<li><code>variable</code> the pollutant name</li>
+<li><code>process</code> the process code. Each site, variable, measurement period combination has a unique process code.</li>
+<li><code>summary</code> the measurement period. <code>1</code> mean hourly measurement. To get all the availabel periods and their corresponding codes, use <code>get_saq_summaries()</code> function.</li>
+<li><code>validity</code> measurement validity. <code>1</code> means valid. To get all the validity code, use <code>get_saq_validity()</code></li>
+<li><code>unit</code> measurement unit</li>
+<li><code>value</code> actual measurement</li>
+</ul>
+<div id="section-data-joining" class="section level3">
+<h3>Data joining</h3>
+<p>Right now the data frame only contains site code but not site name. This may be difficult to read for the following analysis. Let’s join some info about the sites from the <code>spain_sites</code> data frame to the <code>es_aq</code> measurement.</p>
+<p>First let’s select what we want to join. To get the column names of a data frame use <code>names()</code>.</p>
+<div class="tutorial-exercise" data-label="get-names" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>names(es_aq)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p>We need at least <code>site</code>, <code>site_name</code>. <code>latitude</code>, <code>longitude</code> and <code>site_type</code> can also be useful.</p>
+<p>Let’s create a new data frame with only thse columns and name it <code>spain_sites_simple</code>. We will use the <code>select</code> function. Edit the code below to select these 5 columns.</p>
+<div class="tutorial-exercise" data-label="select" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>spain_sites_simple &lt;- spain_sites %&gt;%
+  select(...)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p>Now we can use <code>left_join()</code> to join them together.</p>
+<div class="tutorial-exercise" data-label="left-join" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>es_aq_join &lt;- es_aq %&gt;%
+  left_join(spain_sites_simple, by = &quot;site&quot;)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p>Now let’s take a look at the data frame <code>es_aq_join</code> again using <code>glimpse()</code></p>
+<div class="tutorial-exercise" data-label="glimpse-es-aq-join" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-data-summary" class="section level3">
+<h3>Data summary</h3>
+<p>It’s time to get some summaries of dataset. First let’s see what pollutants are measured at each site and how many measurement there are for each of them. Getting the number of measurement is simple with <code>count()</code> function. But how do we count by each site and pollutant combination. We need a way to group the dataset into different chunks and do the count operation for each group. Conveniently this can be achieved by <code>group_by()</code> function.</p>
+<ul>
+<li>First group the <code>es_aq_join</code> data frame by <code>site_name</code> and <code>variable</code></li>
+<li>Count the number of measurement for each group</li>
+</ul>
+<div class="tutorial-exercise" data-label="group" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="group-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>es_aq_join %&gt;%
+  group_by(site_name, variable)</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="group-hint-2" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>es_aq_join %&gt;%
+  group_by(site_name, variable) %&gt;%
+  count()</code></pre>
+</div>
+<p>In the previous exercise, no argument is supplied to the <code>count()</code> function. This way it counts all the columns. You can also supply a column name to <code>count()</code> and it will group the data frame by that column and then do a count for each group. Now let’s try finding out the number of valid and invalid measurements by using the the <code>validity</code> column.</p>
+<div class="tutorial-exercise" data-label="validity" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="validity-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>es_aq_join %&gt;%
+  count(validity)</code></pre>
+</div>
+<p>Finally let’s get some more interesting statistics. What is the mean for each pollutant at each site for the downloaded period. As before, we want to group the data by <code>site_name</code> and <code>variable</code> and using <code>mean()</code> to calculate the average. However <code>mean()</code> can’t take grouped data frame, it only takes a vector. We need some function that takes a data frame and allows to do some operations inside it. Introducing the <code>summarise()</code> function. As the name suggests, it takes a data frame and creates new columns that summarise existing variables. The syntax is as follows.</p>
+<pre class="r"><code>df %&gt;%
+  group_by(variable) %&gt;%
+  summarise(ave = mean(col_name)) 
+
+# ave is the new column name of the summary result
+# mean is the summarising function
+# col_name is the existing column name in df you want to summarise</code></pre>
+<p>Now let’s try summarising the mean of each pollutant at each site.</p>
+<div class="tutorial-exercise" data-label="summarise" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>es_aq_join %&gt;%
+  group_by(...) %&gt;%
+  summarise(...)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="summarise-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>es_aq_join %&gt;%
+  group_by(site_name, variable) %&gt;%
+  summarise(ave = mean(value))</code></pre>
+</div>
+</div>
+<div id="section-data-reshaping" class="section level3">
+<h3>Data reshaping</h3>
+<p>Currently the data we have is in a long format, i.e. all the pollutant names are in one column. Sometimes we want them in a wide format, i.e. all the pollutants have its own column filled with values. The wide format is generally prefered by functions in the <code>openair</code> package. To reshape the data, <code>saq_clean_observations()</code> can get this done quite easily. There’re some other useful arguments baked in that let’s you filter the hourly and valid data only.</p>
+<pre><code>## Observations: 1,420
+## Variables: 8
+## $ date     &lt;dttm&gt; 2019-07-01 00:00:00, 2019-07-01 00:00:00, 2019-07-01 0…
+## $ date_end &lt;dttm&gt; 2019-07-01 01:00:00, 2019-07-01 01:00:00, 2019-07-01 0…
+## $ site     &lt;chr&gt; &quot;es0115a&quot;, &quot;es1422a&quot;, &quot;es0115a&quot;, &quot;es1422a&quot;, &quot;es0115a&quot;, …
+## $ co       &lt;dbl&gt; 0.3, 0.2, 0.3, 0.3, 0.3, 0.3, 0.3, 0.4, 0.3, 0.3, 0.5, …
+## $ no       &lt;dbl&gt; 2, 3, 1, 1, 1, 2, 1, 1, 14, 2, 44, 13, 113, 19, 22, 20,…
+## $ no2      &lt;dbl&gt; 25, 32, 17, 16, 19, 24, 30, 28, 49, 37, 83, 60, 117, 71…
+## $ o3       &lt;dbl&gt; NA, 54.55, NA, 59.69, NA, 51.63, NA, 34.14, NA, 29.03, …
+## $ so2      &lt;dbl&gt; 1, 11, 1, 11, 1, 11, 1, 11, 1, 12, 1, 12, 3, 12, 1, 12,…</code></pre>
+</div>
+<div id="section-data-averaging" class="section level3">
+<h3>Data averaging</h3>
+<p>Now let’s try another (probably easier) way to get the average value for a time series data using the <code>timeAverage()</code> function in <code>openair</code>. The syntax is very simple.</p>
+<pre class="r"><code>timeAverage(mydata, avg.time = &quot;day&quot;, statistic = &quot;mean&quot;, type = &quot;site&quot;,
+            data.thresh = 75)</code></pre>
+<p>Some explanations:</p>
+<ul>
+<li><code>avg.time</code> lets you choose the averaging period.</li>
+<li><code>statistic</code> lets you choose what summarising method to use. This can be “mean”, “median”, “max”, “min”, etc. More details see the <code>timeAverage</code> help function.</li>
+<li><code>type</code> allows you to apply the averaging to different groups if they exist. Typically this refers to different sites in the data frame.</li>
+<li><code>data.thresh</code> allows you specify a data capture threshold when averaging the data. For daily average, a value of 100 means all 24 valid measurements need to be present (i.e. not missing or <code>NA</code>) to calculate a daily average value. Otherwise it will be <code>NA</code>.</li>
+</ul>
+<p>Now let’s try calculating the daily average of all the pollutants at each site. Note that we need to use the wide data created in the previous exercise.</p>
+<div class="tutorial-exercise" data-label="timeave" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>timeAverage(...)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="timeave-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>timeAverage(es_aq_wide, avg.time = &quot;day&quot;, statistic = &quot;mean&quot;, type = &quot;site&quot;)</code></pre>
+</div>
+</div>
+</div>
+<div id="section-getting-met-data" class="section level2">
+<h2>Getting met data</h2>
+<div id="section-find-the-met-station" class="section level3">
+<h3>Find the met station</h3>
+<p>Met data is often essential for analysing air quality data. <code>worldmet</code> package makes it easy to download surface meteorological data around the world. First let’s check which station we need to download the data from for the two monitoring sites in Madrid. We will use the <code>getMeta()</code> function to find the closest met station. <code>getMeta()</code> takes a pair of latitude and longitude coordinates and plots the nearest 10 stations on a map. Remember you can find the coordinates for the monitoring sites by looking at the <code>es_aq_join</code> data frame.</p>
+<div class="tutorial-exercise" data-label="getmeta" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="getmeta-hint-1" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>glimpse(es_aq_join)</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="getmeta-hint-2" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>getMeta(lat = 40.42417, lon = -3.712222)</code></pre>
+</div>
+</div>
+<div id="section-download-met-data" class="section level3">
+<h3>Download met data</h3>
+<p>From the map above, we find that Madrid Retiro is the closest met station. We will need its site code (082220-99999) to download the met data. Now try to download data for this site for 2019.</p>
+<div class="tutorial-exercise" data-label="download-met" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>met &lt;- imoprtNOAA(code = ..., year = ...)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-join-met-data-with-aq-data" class="section level3">
+<h3>Join met data with AQ data</h3>
+<p>Now that we have the met data, we can join it with the AQ data for further analysis using a suite of <code>openair</code> functions. Remember the syntax for <code>left_join</code> is as follows.</p>
+<pre class="r"><code>left_join(df1, df2, by = &quot;col_name&quot;)</code></pre>
+<p>Now try to join the <code>es_aq_wide</code> data frame with <code>met</code> data frame and save the output to <code>es_aq_wide</code>.</p>
+<div class="tutorial-exercise" data-label="join-met" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="join-met-hint" data-caption="Sandbox" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>es_aq_wide &lt;- left_join(es_aq_wide, met, by = &quot;date&quot;)</code></pre>
+</div>
+<blockquote>
+<p>Note that the order of two data frames in <code>left_join</code> matters. <code>left_join</code> will keep all the rows and columns of the first data frame and matching results from the second data frame. Other variants of joining are available. You can find more details with <code>?join</code></p>
+</blockquote>
+
+<script type="application/shiny-prerendered" data-context="server-start">
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+tutorial_options(exercise.cap = "Sandbox")
+library(tidyverse)
+library(saqgetr)
+library(worldmet)
+library(openair)
+library(ricardor)
+
+spain_sites <- get_saq_sites() %>%
+  filter(country == "spain")
+
+es_aq <- get_saq_observations(
+  site = c("es1422a", "es0115a"),
+  start = "2019-07-01",
+  end = "2019-07-31"
+)
+
+spain_sites_simple <- spain_sites %>%
+  select(site, site_name, latitude, longitude, site_type)
+
+es_aq_join <- es_aq %>%
+  left_join(spain_sites_simple)
+
+es_aq_wide <- es_aq_join %>%
+  saq_clean_observations(summary = "hour", valid_only = TRUE, spread = TRUE)
+
+met <- readRDS("met.rds")
+
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::register_http_handlers(session, metadata = NULL)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-get-data-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-get-data-code-editor`)), session)
+output$`tutorial-exercise-get-data-output` <- renderUI({
+  `tutorial-exercise-get-data-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot-site-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot-site-code-editor`)), session)
+output$`tutorial-exercise-plot-site-output` <- renderUI({
+  `tutorial-exercise-plot-site-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-two-sites-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-two-sites-code-editor`)), session)
+output$`tutorial-exercise-two-sites-output` <- renderUI({
+  `tutorial-exercise-two-sites-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-get-aq-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-get-aq-code-editor`)), session)
+output$`tutorial-exercise-get-aq-output` <- renderUI({
+  `tutorial-exercise-get-aq-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-glimpse-es_aq-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-glimpse-es_aq-code-editor`)), session)
+output$`tutorial-exercise-glimpse-es_aq-output` <- renderUI({
+  `tutorial-exercise-glimpse-es_aq-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-get-names-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-get-names-code-editor`)), session)
+output$`tutorial-exercise-get-names-output` <- renderUI({
+  `tutorial-exercise-get-names-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-select-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-select-code-editor`)), session)
+output$`tutorial-exercise-select-output` <- renderUI({
+  `tutorial-exercise-select-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-left-join-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-left-join-code-editor`)), session)
+output$`tutorial-exercise-left-join-output` <- renderUI({
+  `tutorial-exercise-left-join-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-glimpse-es-aq-join-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-glimpse-es-aq-join-code-editor`)), session)
+output$`tutorial-exercise-glimpse-es-aq-join-output` <- renderUI({
+  `tutorial-exercise-glimpse-es-aq-join-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-group-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-group-code-editor`)), session)
+output$`tutorial-exercise-group-output` <- renderUI({
+  `tutorial-exercise-group-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-validity-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-validity-code-editor`)), session)
+output$`tutorial-exercise-validity-output` <- renderUI({
+  `tutorial-exercise-validity-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-summarise-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-summarise-code-editor`)), session)
+output$`tutorial-exercise-summarise-output` <- renderUI({
+  `tutorial-exercise-summarise-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-timeave-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-timeave-code-editor`)), session)
+output$`tutorial-exercise-timeave-output` <- renderUI({
+  `tutorial-exercise-timeave-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-getmeta-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-getmeta-code-editor`)), session)
+output$`tutorial-exercise-getmeta-output` <- renderUI({
+  `tutorial-exercise-getmeta-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-download-met-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-download-met-code-editor`)), session)
+output$`tutorial-exercise-download-met-output` <- renderUI({
+  `tutorial-exercise-download-met-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-join-met-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-join-met-code-editor`)), session)
+output$`tutorial-exercise-join-met-output` <- renderUI({
+  `tutorial-exercise-join-met-result`()
+})
+</script>
+ <!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.15"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.15"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.15"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.15"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.15"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.15"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["localforage"]},{"type":"character","attributes":{},"value":["1.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/localforage"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["localforage.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.2.1"]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103]}},"value":[{"type":"character","attributes":{},"value":["assertthat","backports","base","broom","cellranger","cli","cluster","codetools","colorspace","compiler","crayon","crosstalk","curl","data.table","datasets","digest","doParallel","dplyr","dygraphs","evaluate","fansi","forcats","foreach","generics","ggplot2","glue","graphics","grDevices","grid","gtable","haven","hexbin","hms","htmltools","htmlwidgets","httpuv","httr","iterators","jsonlite","knitr","later","lattice","latticeExtra","lazyeval","leaflet","learnr","lifecycle","lubridate","magrittr","mapproj","maps","markdown","MASS","Matrix","methods","mgcv","mime","modelr","munsell","nlme","openair","parallel","pillar","pkgconfig","plotly","promises","purrr","R6","RColorBrewer","Rcpp","readr","readxl","ricardor","rlang","rmarkdown","rprojroot","rstudioapi","rvest","saqgetr","scales","shiny","sp","splines","stats","stringi","stringr","tibble","tidyr","tidyselect","tidyverse","tools","utf8","utils","vctrs","viridisLite","withr","worldmet","xfun","xml2","xtable","yaml","zeallot","zoo"]},{"type":"character","attributes":{},"value":["0.2.1","1.1.4","3.5.2","0.5.2","1.1.0","1.1.0","2.1.0","0.2-16","1.4-1","3.5.2","1.3.4","1.0.0","4.0","1.11.8","3.5.2","0.6.21","1.0.15","0.8.3","1.1.1.6","0.14","0.4.0","0.4.0","1.4.7","0.0.2","3.2.1","1.3.1","3.5.2","3.5.2","3.5.2","0.3.0","2.1.1","1.27.3","0.5.1","0.3.6","1.3","1.5.2","1.4.1","1.0.12","1.6","1.25","0.8.0","0.20-38","0.6-28","0.2.2","2.0.2","0.9.2.1","0.1.0","1.6.0","1.5","1.2.6","3.3.0","1.1","7.3-51.4","1.2-17","3.5.2","1.8-29","0.7","0.1.5","0.5.0","3.1-141","2.6-5","3.5.2","1.4.2","2.0.2","4.9.0","1.0.1","0.3.2","2.4.0","1.1-2","1.0.2","1.3.1","1.3.1","0.3.1","0.4.0","1.15","1.3-2","0.10","0.3.4","0.1.18","1.0.0","1.3.2","1.3-1","3.5.2","3.5.2","1.4.3","1.4.0","2.1.3","1.0.0","0.2.5","1.2.0","3.5.2","1.1.4","3.5.2","0.2.0","0.3.0","2.1.2","0.8.7","0.9","1.2.2","1.8-4","2.2.0","0.1.0","1.8-6"]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+</div>
+
+</div> <!-- topics -->
+
+<div class="topicsContainer">
+<div class="topicsPositioner">
+<div class="band">
+<div class="bandContent topicsListContainer">
+
+<!-- begin doc-metadata -->
+<div id="doc-metadata">
+<h2 class="title toc-ignore" style="display:none;">Tutorial</h2>
+</div>
+<!-- end doc-metadata -->
+
+</div> <!-- bandContent.topicsListContainer -->
+</div> <!-- band -->
+</div> <!-- topicsPositioner -->
+</div> <!-- topicsContainer -->
+
+
+</div> <!-- bandContent page -->
+</div> <!-- pageContent band -->
+
+
+
+
+<script>
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+
+</html>
