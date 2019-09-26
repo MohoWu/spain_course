@@ -1,15 +1,16 @@
 ---
 title: Accessing Spanish AQ and met data with `saqgetr` and `worldmet`
-date: "`r Sys.Date()`"
-Author: "Hao Wu"
-output: 
-  html_document:
-    toc: true
-    toc_float: true
-    code_folding: "show"
-    code_download: true
-    theme: "flatly"
-    highlight: "tango"
+subtitle: "Ricardo Energy & Environment"
+author: "Hao Wu and David Carslaw"
+date: "7--9 October 2019"
+output:
+  prettydoc::html_pretty: 
+    highlight: github
+    theme: cayman
+    toc: yes
+    toc_float: no
+    number_sections: true
+fontsize: 12pt
 editor_options: 
   chunk_output_type: console
 ---
@@ -21,6 +22,7 @@ knitr::opts_chunk$set(
   message = FALSE)
 ```
 
+
 # Preparation
 
 To start with, some R packages need to be installed for the following analysis. 
@@ -29,7 +31,7 @@ To start with, some R packages need to be installed for the following analysis.
 
 packages <- c("tidyverse", "saqgetr", "worldmet", "openair")
 
-# install them from CRAN if you haven't them before
+# install them from CRAN if you haven't installed them before
 # install.packages(packages)
 
 # load packages
