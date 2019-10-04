@@ -1,0 +1,251 @@
+---
+title: Exercise
+subtitle: "Ricardo Energy & Environment"
+author: "Hao Wu and David Carslaw"
+date: "7--9 October 2019"
+output:
+  prettydoc::html_pretty: 
+    highlight: github
+    theme: cayman
+    toc: yes
+    toc_float: no
+    number_sections: true
+fontsize: 12pt
+editor_options: 
+  chunk_output_type: console
+params:
+  eval: no
+  echo: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = params$echo,
+                      eval = params$eval)
+library(tidyverse)
+library(saqgetr)
+library(worldmet)
+library(openair)
+library(ricardor)
+
+```
+
+# Getting AQ data
+
+## Finding available data
+
+* **Find all the available monitoring sites in Spain and save it to a data frame called `spain_sites`**
+* **Quickly view a summary of `spain_sites` with `glimpse()`**
+
+```{r}
+
+spain_sites <- get_saq_sites() %>%
+  filter(country == "spain")
+
+glimpse(spain_sites)
+
+```
+
+
+## Plot all the Spanish sites
+
+**Now plot the sites on a map and find two sites that are still in operation in 2019.**
+
+> Hint: First you will need to convert the data frame to a spatial object with `sp_from_data_frame()` then plot it with `plot_leaflet()`
+
+```{r}
+
+spain_sites %>%
+  mutate(date_end = as.character(date_end)) %>% # convert date to character to allow it show up properly on the map
+  sp_from_data_frame(type = "point", 
+                     latitude = "latitude", longitude = "longitude") %>%
+  plot_leaflet(popup = c("site", "site_name", "site_type", "date_end"),
+               radius = 8, colour = "red", clusterOptions = leaflet::markerClusterOptions()) # try different options in plot_leaflet to get the desired plot
+
+```
+
+
+## Select two sites
+
+Zoom into Madrid and find two sites that are still in operation in 2019.
+
+**Filter the `spain_sites` data frame to get info about two sites in Madrid:**
+
+* **Plaza del Carmen (es1422a)**
+* **Plaza de Espana (es0115a)**
+
+```{r}
+
+spain_sites %>%
+  filter(site %in% c("es1422a", "es0115a"))
+
+```
+
+## Get AQ data
+
+**Now let's download July 2019 data for these sites and save it to `es_aq` data frame.**
+
+```{r}
+# select two sites in Madrid
+es_aq <- get_saq_observations(
+  site = c("es1422a", "es0115a"),
+  start = "2019-07-01",
+  end = "2019-07-31"
+)
+```
+
+# Data exploration
+
+**Check the `es_aq` data frame and see if the columns make sense.**
+
+```{r}
+glimpse(es_aq)
+```
+
+
+The data should contain 9 columns.
+
+* `date` the start date/time of the measurement
+* `end_date` the end date/teim of the measurement
+* `site` the site code
+* `variable` the pollutant name
+* `process` the process code. Each site, variable, measurement period combination has a unique process code.
+* `summary` the measurement period. `1` mean hourly measurement. To get all the availabel periods and their corresponding codes, use `get_saq_summaries()` function.
+* `validity` measurement validity. `1` means valid. To get all the validity code, use `get_saq_validity()`
+* `unit` measurement unit
+* `value` actual measurement
+
+## Data joining
+
+Right now the data frame only contains site code but not site name. This may be difficult to read for the following analysis. Let's join some info about the sites from the `spain_sites` data frame to the `es_aq` measurement.
+
+First let's select what we want to join. 
+
+* **Get the column names of a data frame use `names()`.**
+* **We will select `site`, `site_name`.  `latitude`, `longitude` and `site_type` to join with the `es_aq`.**
+* **Create a new data frame with only thse columns and name it `spain_sites_simple`. We need to use the `select()` function.** 
+* **Now we can use `left_join()` to join them together and save the output to `es_aq_join`**
+* **Take a look at the new joined data frame**.
+
+```{r}
+
+names(es_aq)
+
+spain_sites_simple <- spain_sites %>%
+  select(site, site_name, latitude, longitude, site_type)
+
+es_aq_join <- es_aq %>%
+  left_join(spain_sites_simple, by = "site")
+
+glimpse(es_aq_join)
+
+```
+
+## Data summary
+
+It's time to get some summaries of dataset. First let's see what pollutants are measured at each site and how many measurement there are for each of them. Getting the number of measurement is simple with `count()`  function. But how do we count by each site and pollutant combination. We need a way to group the dataset into different chunks and do the count operation for each group. Conveniently this can be achieved by `group_by()` function.
+
+* **Group the `es_aq_join` data frame by `site_name` and `variable`**
+* **Count the number of measurement for each group**
+
+```{r}
+es_aq_join %>%
+  group_by(site_name, variable) %>%
+  count()
+```
+
+
+If no argument is supplied to the `count()` function, it counts all the columns. You can also supply a column name to `count()` and it will group the data frame by that column and then do a count for each group.
+
+**Let's try finding out the number of valid and invalid measurements by counting the `validity` column.**
+
+```{r}
+
+es_aq_join %>%
+  count(validity)
+```
+
+
+Finally let's get some more interesting statistics. What is the mean for each pollutant at each site for the downloaded period. As before, we want to group the data by `site_name` and `variable` and using `mean()` to calculate the average. However `mean()` can't take grouped data frame, it only takes a vector. We need some function that takes a data frame and allows to do some operations inside it. Introducing the `summarise()` function. As the name suggests, it takes a data frame and creates new columns that summarise existing variables. The syntax is as follows.
+
+**Now let's try summarising the mean of each pollutant at each site.**
+
+```{r}
+
+es_aq_join %>%
+  group_by(site_name, variable) %>%
+  summarise(ave = mean(value))
+
+```
+
+
+## Data reshaping
+
+Currently the data we have is in a long format, i.e. all the pollutant names are in one column. Sometimes we want them in a wide format, i.e. all the pollutants have its own column filled with values. The wide format is generally prefered by functions in the `openair` package. To reshape the data, `saq_clean_observations()` can get this done quite easily. There're some other useful arguments baked in that let's you filter the hourly and valid data only.
+
+**Reshape `es_aq_join` to wide format with `saq_clean_observations()`**
+
+```{r}
+es_aq_wide <- es_aq_join %>%
+  saq_clean_observations(summary = "hour", valid_only = TRUE, spread = TRUE)
+
+glimpse(es_aq_wide)
+
+```
+
+
+## Data averaging
+
+Now let's try another (probably easier) way to get the average value for a time series data using the `timeAverage()` function in `openair`. Get the help file using `?openair::timeAverage`.
+
+Some explanations:
+
+* `avg.time` lets you choose the averaging period.
+* `statistic` lets you choose what summarising method to use. This can be "mean", "median", "max", "min", etc. More details see the `timeAverage` help function.
+* `type` allows you to apply the averaging to different groups if they exist. Typically this refers to different sites in the data frame.
+* `data.thresh` allows you specify a data capture threshold when averaging the data. For daily average, a value of 100 means all 24 valid measurements need to be present (i.e. not missing or `NA`) to calculate a daily average value. Otherwise it will be `NA`.
+
+**Calculate the daily average of all the pollutants at each site.**
+
+```{r}
+timeAverage(es_aq_wide, avg.time = "day", statistic = "mean", type = "site",
+            data.thresh = 75)
+
+```
+
+# Getting met data
+
+## Find the met station
+
+Met data is often essential for analysing air quality data. `worldmet` package makes it easy to download surface meteorological data around the world. First let's check which station we need to download the data from for the two monitoring sites in Madrid. We will use the `getMeta()` function to find the closest met station. `getMeta()` takes a pair of latitude and longitude coordinates and plots the nearest 10 stations on a map. Remember you can find the coordinates for the monitoring sites by looking at the `es_aq_join` data frame.
+
+**Find out what met stations are available near the monitoring sites.**
+
+```{r}
+getMeta(lat = 40.42417, lon = -3.712222)
+```
+
+## Download met data
+
+From the map above, we find that Madrid Retiro is the closest met station. We will need its site code (082220-99999) to download the met data. 
+
+**Now try to download data for this site for 2019.**
+
+```{r}
+met <- importNOAA(code = "082220-99999", year = 2019)
+```
+
+
+## Join met data with AQ data
+
+Now that we have the met data, we can join it with the AQ data for further analysis using a suite of `openair` functions.
+
+**Join met data with `es_aq_wide`**
+
+```{r}
+es_aq_wide <- left_join(es_aq_wide, met, by = "date")
+```
+
+
+> Note that the order of two data frames in `left_join` matters. `left_join` will keep all the rows and columns of the first data frame and matching results from the second data frame. Other variants of joining are available. You can find more details with `?join`
+
+
